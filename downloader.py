@@ -1,14 +1,20 @@
+# Standard library imports
 import os
-import time
 import json
-import requests
-import tkinter as tk
 import threading
+import tkinter as tk
+import time
+
+# Third-party imports
+import requests
 import ttkbootstrap as tb
-from ttkbootstrap.constants import *
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.service import Service
+from selenium.webdriver.edge.options import Options
 
+
+# Local imports
 from image_utils import get_image_src, is_valid_image
 from login_utils import login_to_simpcity
 
@@ -81,9 +87,17 @@ def build_download_frame(parent, config_path, urls_file):
                 os.makedirs(combined_output_dir)
 
             
-            driver = webdriver.Chrome()
+            edge_options = Options()
+            edge_options.add_argument("--disable-features=SmartScreen")
+            edge_options.add_argument("--disable-popup-blocking")
+            edge_options.add_argument("--log-level=3")  # Only show errors
+            edge_options.add_experimental_option("excludeSwitches", ["enable-logging"])  # Suppress DevTools spam
+
+            service = Service(log_path="NUL")  # Suppress EdgeDriver logs on Windows
+
+            driver = webdriver.Edge(service=service, options=edge_options)
             try:
-                driver.get("https://simpcity.su/login/")
+                driver.get("https://simpcity.cr/login/")
                 time.sleep(3)
                 login_to_simpcity(driver, username, password)
                 log_message("Logged in successfully.")
@@ -143,7 +157,7 @@ def build_download_frame(parent, config_path, urls_file):
 
     def get_folder_name(url):
         """
-        Extract the portion after 'threads/' from the URL.
+        Extract the portion after 'threads' from the URL.
         e.g., 
           https://simpcity.su/threads/nottrebeca_.180370/page-2 -> 'nottrebeca_.180370'
           https://simpcity.su/threads/something-else.12345 -> 'something-else.12345'
