@@ -5,10 +5,8 @@ import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from tkinter import filedialog
 
-
-
 from config_utils import build_config_frame, build_urls_frame
-from downloader import build_download_frame
+from content_generator import build_content_frame
 from link_utils import build_generate_links_frame
 from login_utils import login_to_simpcity
 from image_utils import is_valid_image, get_image_src
@@ -67,7 +65,7 @@ def main_gui():
     home_title.pack(pady=30)
 
     
-    desc_frame = tb.Frame(home_page, bootstyle="dark")
+    desc_.frame = tb.Frame(home_page, bootstyle="dark")
     desc_frame.pack(pady=20)
 
     
@@ -113,8 +111,8 @@ def main_gui():
     generate_page = build_generate_links_frame(content_frame, urls_file, refresh_urls_list)
     pages["generate"] = generate_page
 
-    download_page = build_download_frame(content_frame, config_path, urls_file)
-    pages["download"] = download_page
+    content_page = build_content_frame(content_frame, config_path, urls_file)
+    pages["content"] = content_page
 
     
     style_for_button = "success-outline"
@@ -149,9 +147,9 @@ def main_gui():
 
     tb.Button(
         sidebar_frame,
-        text="Download Images",
+        text="Generate Content JSON",
         bootstyle=style_for_button,
-        command=lambda: show_page("download")
+        command=lambda: show_page("content")
     ).pack(pady=5, fill="x")
 
     tb.Button(
