@@ -4,12 +4,14 @@ import tkinter as tk
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from tkinter import filedialog
+import sys
 
 from config_utils import build_config_frame, build_urls_frame
 from content_generator import build_content_frame
 from link_utils import build_generate_links_frame
 from login_utils import login_to_simpcity
 from image_utils import is_valid_image, get_image_src
+from report_generator import build_report_frame
 
 def main_gui():
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -21,9 +23,6 @@ def main_gui():
     app.title("SimpDL")
 
     def center_window(window, width=900, height=600):
-        """
-        Manually center a Tk window on the screen at the given width/height.
-        """
         window.geometry(f"{width}x{height}")
         window.update_idletasks() 
 
@@ -72,7 +71,7 @@ def main_gui():
     line_label = tb.Label(
         desc_frame,
         text=(
-            "This is a tool to download images from SimpCity.\n"
+            "This is a tool for SimpCity.\n"
             "For help or more information, contact me on Telegram:"
         ),
         font=("Helvetica", 16)
@@ -92,13 +91,10 @@ def main_gui():
         cursor="hand2"
     )
     link_label.pack()
-
-    
     link_label.bind("<Button-1>", open_telegram)
 
     pages["home"] = home_page
 
-   
     config_page = build_config_frame(content_frame, config_path)
     pages["config"] = config_page
 
@@ -114,54 +110,20 @@ def main_gui():
     content_page = build_content_frame(content_frame, config_path, urls_file)
     pages["content"] = content_page
 
+    report_page = build_report_frame(content_frame)
+    pages["report"] = report_page
     
     style_for_button = "success-outline"
 
-    tb.Button(
-        sidebar_frame,
-        text="Home",
-        bootstyle=style_for_button,
-        command=lambda: show_page("home")
-    ).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Home", bootstyle=style_for_button, command=lambda: show_page("home")).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Modify Config", bootstyle=style_for_button, command=lambda: show_page("config")).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Change URL File", bootstyle=style_for_button, command=lambda: show_page("urls")).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Generate Links", bootstyle=style_for_button, command=lambda: show_page("generate")).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Generate Content JSON", bootstyle=style_for_button, command=lambda: show_page("content")).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Generate HTML Report", bootstyle=style_for_button, command=lambda: show_page("report")).pack(pady=5, fill="x")
+    tb.Button(sidebar_frame, text="Exit", bootstyle="danger", command=app.quit).pack(pady=(40, 10), fill="x")
 
-    tb.Button(
-        sidebar_frame,
-        text="Modify Config",
-        bootstyle=style_for_button,
-        command=lambda: show_page("config")
-    ).pack(pady=5, fill="x")
-
-    tb.Button(
-        sidebar_frame,
-        text="Change URL File",
-        bootstyle=style_for_button,
-        command=lambda: show_page("urls")
-    ).pack(pady=5, fill="x")
-
-    tb.Button(
-        sidebar_frame,
-        text="Generate Links",
-        bootstyle=style_for_button,
-        command=lambda: show_page("generate")
-    ).pack(pady=5, fill="x")
-
-    tb.Button(
-        sidebar_frame,
-        text="Generate Content JSON",
-        bootstyle=style_for_button,
-        command=lambda: show_page("content")
-    ).pack(pady=5, fill="x")
-
-    tb.Button(
-        sidebar_frame,
-        text="Exit",
-        bootstyle="danger",
-        command=app.quit
-    ).pack(pady=(40, 10), fill="x")
-
-    
     show_page("home")
-
     app.mainloop()
 
 if __name__ == "__main__":
