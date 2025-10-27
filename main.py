@@ -65,7 +65,7 @@ def main_gui():
     home_title.pack(pady=30)
 
     
-    desc_.frame = tb.Frame(home_page, bootstyle="dark")
+    desc_frame = tb.Frame(home_page, bootstyle="dark")
     desc_frame.pack(pady=20)
 
     
