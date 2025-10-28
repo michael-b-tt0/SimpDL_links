@@ -1,13 +1,13 @@
 # SimpDL
 
-
-A Python application built with [ttkbootstrap](https://pypi.org/project/ttkbootstrap) and Selenium to **download images** from [SimpCity](https://simpcity.su). The tool supports:
+A Python application built with [ttkbootstrap](https://pypi.org/project/ttkbootstrap) and Selenium to **scrape and organize content** from [SimpCity](https://simpcity.su) with comprehensive **HTML reporting**. The tool supports:
 
 - **Config editing** for credentials and output directory.
 - **URL management** (change/add/remove links).
 - **Automated login** to SimpCity using Selenium.
-- **Downloading** images (in the background, no GUI freeze).
-- **Generating** multiple SimpCity links based on a base URL and page count.
+- **Content scraping** to JSON format with multithreaded processing.
+- **HTML report generation** from JSON data with Jinja2 templating.
+- **Real-time progress tracking** and statistics during operations.
 
 This README walks you through **requirements**, **installation**, and **usage** instructions.
 
@@ -22,7 +22,8 @@ This README walks you through **requirements**, **installation**, and **usage** 
   - [1. Configure Application](#1-configure-application)
   - [2. Manage URLs](#2-manage-urls)
   - [3. Generate Links](#3-generate-links)
-  - [4. Download Images](#4-download-images)
+  - [4. Generate Content](#4-generate-content)
+  - [5. Generate Reports](#5-generate-reports)
 - [Running the Program](#running-the-program)
 - [Troubleshooting](#troubleshooting)
 - [Terms and Conditions](#terms-and-conditions)
@@ -36,8 +37,8 @@ The project depends on the following Python packages:
 ```txt
 requests
 selenium
-Pillow
 ttkbootstrap
+jinja2
 ```
 
 These can be installed via:
@@ -55,7 +56,7 @@ pip install -r requirements.txt
 1. **Clone** this repository:
 
    ```bash
-   git clone https://github.com/annashumate1/SimpDL
+   git clone https://github.com/michael-b-tt0/SimpDL_links
    cd SimpDL
    ```
 
@@ -80,26 +81,28 @@ pip install -r requirements.txt
 
 ```bash
 SimpDL/
-├─ assets/
-│  └─ anna.jpg         # icon (change if you want but keep if you love Anna :) )
+
 ├─ config/
 │  ├─ config.json      # stores username/password/output_directory
 │  └─ urls.txt         # stores links
 ├─ main.py             # main GUI entry point
 ├─ config_utils.py     # frames for editing config & URL list
-├─ downloader.py       # download frame & logic (multithreaded)
-├─ image_utils.py      # helper functions for validating images
-├─ link_utils.py       # link generation & frames
-├─ login_utils.py      # simpcity login function
-├─ requirements.txt    # required packages
-└─ README.md           # this file
+├─ content_generator.py # content scraping to JSON with multithreaded GUI
+├─ report_generator.py  # HTML report generation from JSON with Jinja2
+├─ scraper_utils.py     # core scraping functions
+├─ login_utils.py       # simpcity login automation
+├─ link_utils.py        # link generation & management frames
+├─ styles.py            # UI styling and themes
+├─ template.html        # Jinja2 template for HTML reports
+├─ requirements.txt     # required packages
+└─ README.md            # this file
 ```
 
 ---
 
 ## Usage
 
-Once installed, you can run the application and **use the GUI** to edit config, manage URLs, generate links, and download images.
+Once installed, you can run the application and **use the GUI** to edit config, manage URLs, generate links, scrape content to JSON, and generate HTML reports.
 
 ### 1. Configure Application
 
@@ -107,8 +110,8 @@ Once installed, you can run the application and **use the GUI** to edit config, 
 - You’ll see all keys from `config.json`, such as `username`, `password`, `output_directory`.
 - Edit them as needed, then **Save**.
 - **username** / **password** should match your SimpCity account.
-- **output\_directory** is where downloaded images will go
-> **Note**: The images will go in a folder in the output directory automatically created by the program.
+- **output** is where the finished json content will go
+
 
 ### 2. Manage URLs
 
@@ -124,17 +127,32 @@ Once installed, you can run the application and **use the GUI** to edit config, 
 - The tool writes all pages (`page-1`, `page-2`, etc.) into `urls.txt` automatically.
 - **Note**: You can edit these again in **Change URL File** if needed.
 
-### 4. Download Images
+### 4. Generate Content
 
-- Click **“Download Images”** in the sidebar.
-- **Start Download** triggers a multithreaded process:
+- Click **"Content Generator"** in the sidebar.
+- The interface shows statistics like total URLs to process, posts found, and processing progress.
+- Click **"Start Generation"** to begin multithreaded content scraping:
   1. **Logs in** to SimpCity using credentials in `config.json`.
-  2. Iterates over each URL in `urls.txt`.
-  3. Scrapes and downloads valid images to your `output_directory`.
-- During download, you’ll see a **progress bar** and **status**.
-- **Log messages** appear in the text box.
-- You can switch to other pages in the sidebar while it downloads (the GUI won’t freeze).
-> **Note**: Don't be alarmed if the program skips over files marked as "invalid" these files are not the images you are looking for (e.g profile photos, banners etc.) 
+  2. Visits each URL in `urls.txt` and scrapes thread/post data.
+  3. Saves all content as JSON in your `output_directory`.
+- Real-time progress tracking shows completion percentage and posts found.
+- **Activity log** displays detailed status messages and errors.
+- You can switch to other pages while content generation runs (the GUI won’t freeze).
+> **Note**: A JSON file named `{folder_name}_{date}.json` will be created in your output directory containing all scraped content data.
+
+### 5. Generate Reports
+
+- Click **"Report Generator"** in the sidebar.
+- **Browse** and select a JSON file generated by the Content Generator.
+- File preview shows total posts, file size, and modification date.
+- Click **"Generate HTML Report"** to create a beautiful HTML report:
+  1. Loads and validates the selected JSON file.
+  2. Renders the content using Jinja2 template (`template.html`).
+  3. Saves HTML report in the same directory as the JSON file.
+  4. Automatically opens the report in your default web browser.
+  5. All unique links from pixeldrain and gofile sources are located at the top for easy assessment 
+- Status messages guide you through the generation process.
+> **Note**: The HTML report provides an organized, searchable view of all scraped content with styling and navigation.
 
 ---
 
@@ -157,20 +175,18 @@ You should see the **SimpDL** window open:
 
 - **Credentials**: If login fails, confirm your `username` and `password` in `config/config.json` are correct.
 - **ChromeDriver**: If Selenium fails to launch Chrome, check that your **Chrome** version matches your **ChromeDriver** version.
-- **Images Not Downloading**:
+- **Content Generation Issues**:
   - Ensure you have valid links in `urls.txt`.
+  - Verify `output_directory` exists and is writable.
+  - Check the activity log for specific error messages.
+- **Report Generation Issues**:
+  - Ensure you have a valid JSON file generated by Content Generator.
+  - Verify `template.html` exists in the application directory.
+  - Check browser permissions if the report doesn't open automatically.
+- **Template Missing**: If you get template errors, ensure `template.html` is in the application root directory and hasn't been moved.
 - **Tkinter Issues**:
   - **Windows**: Tkinter is included by default with Python. If you encounter issues, ensure you installed Python with the **Add Python to PATH** option.
   - **Linux**: Install via `sudo pacman -S tk` (Arch) or `sudo apt-get install python3-tk` (Ubuntu).
   - **macOS**: Ensure you have XQuartz or the correct Tcl/Tk environment.
 
 ---
-
-
-**Enjoy using SimpDL!** If you have any issues or suggestions, feel free[ to ](https://github.com/annashumate1/SimpDL/issues)[open an issue](https://github.com/annashumate1/SimpDL/issues) or reach out on [Telegram:](https://t.me/annashumatelover)
-
-## Terms and Conditions
-### By downloading and using this program you agree that Anna is beautiful and deserves every ounce of respect you have
-![annamainpic](https://github.com/user-attachments/assets/e66ffc59-f920-4a9d-b4cb-d18a11482e3e)
-
-

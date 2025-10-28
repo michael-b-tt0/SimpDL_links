@@ -5,24 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scraped Post Data</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #f0f0f0; background-color: #282c34; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background-color: #3a3f4b; padding: 20px; border-radius: 8px; }
-        h1 { color: #61afef; border-bottom: 2px solid #61afef; padding-bottom: 10px; }
-        .post { border: 1px solid #444; padding: 15px; margin-bottom: 20px; border-radius: 5px; background-color: #404552; }
-        .post-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 15px; }
-        .post-title { font-size: 1.5em; margin: 0; color: #98c379; }
-        .post-meta { font-size: 0.9em; color: #abb2bf; }
-        .post-content h3 { color: #e5c07b; }
-        .image-gallery { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .image-gallery img { max-width: 150px; border-radius: 4px; border: 2px solid #666; }
-        .link-list { list-style: none; padding: 0; }
-        .link-list li a { color: #c678dd; text-decoration: none; }
-        .link-list li a:hover { text-decoration: underline; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.4;
+            color: #f0f0f0;
+            background-color: #282c34;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #3a3f4b;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #61afef;
+            border-bottom: 2px solid #61afef;
+            padding-bottom: 10px;
+        }
+        .post {
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background-color: #404552;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .post-title {
+            font-size: 1.4em;
+            margin: 0;
+            color: #98c379;
+        }
+        .post-meta {
+            font-size: 0.9em;
+            color: #abb2bf;
+        }
+        .post-content h3 {
+            color: #e5c07b;
+            margin: 15px 0 5px 0;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .image-gallery img {
+            max-width: 150px;
+            border-radius: 6px;
+            border: 2px solid #666;
+        }
+        .video-section {
+            background-color: #2a2e37;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+        .video-section h2 {
+            color: #e06c75;
+            margin-top: 0;
+        }
+        .video-section h3 {
+            color: #d19a66;
+            margin-bottom: 5px;
+        }
+        .link-list {
+            list-style: none;
+            padding: 0;
+        }
+        .link-list li a {
+            color: #c678dd;
+            text-decoration: none;
+            transition: color 0.3s ease; /* smooth fade */
+        }
+        .link-list li a:hover {
+            text-decoration: underline;
+        }
+        .link-list li a:visited {
+            color: #9a6fd1; /* softer purple for visited links */
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Scraped Post Data</h1>
+
+        {% set ns = namespace(pixeldrain_links=[], gofile_links=[]) %}
+
+        {% for post in posts %}
+          {% for link in post.external_links %}
+            {% if 'pixeldrain.com' in link and link not in ns.pixeldrain_links %}
+              {% set _ = ns.pixeldrain_links.append(link) %}
+            {% elif 'gofile.io' in link and link not in ns.gofile_links %}
+              {% set _ = ns.gofile_links.append(link) %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+
+        {% if ns.pixeldrain_links or ns.gofile_links %}
+        <div class="video-section">
+            <h2>Video Links</h2>
+
+            {% set unique_pixeldrain_links = ns.pixeldrain_links | unique %}
+            {% set unique_gofile_links = ns.gofile_links | unique %}
+
+            {% if unique_pixeldrain_links %}
+            <h3>Pixeldrain Links</h3>
+            <ul class="link-list">
+                {% for link in unique_pixeldrain_links %}
+                <li>{{ loop.index }}. <a href="{{ link }}" target="_blank">{{ link }}</a></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if unique_gofile_links %}
+            <h3>Gofile Links</h3>
+            <ul class="link-list">
+                {% for link in unique_gofile_links %}
+                <li>{{ loop.index }}. <a href="{{ link }}" target="_blank">{{ link }}</a></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+
         {% for post in posts %}
         <div class="post">
             <div class="post-header">
